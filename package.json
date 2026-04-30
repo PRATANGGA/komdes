@@ -1,0 +1,34 @@
+{
+  "name": "komdes-workspace",
+  "private": true,
+  "scripts": {
+    "dev:komdes": "pnpm -F komdes dev",
+    "build:komdes": "pnpm -F komdes build",
+    "dev:docs": "pnpm -F docs dev",
+    "build:docs": "pnpm -F docs build",
+    "docs": "pnpm -F komdes docs",
+    "typecheck": "pnpm -F komdes typecheck",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build:komdes && changeset publish",
+    "format": "biome check --write",
+    "format:check": "biome check",
+    "lint:check": "biome lint .",
+    "prepare": "husky",
+    "changelog:mdx": "node scripts/generate-mdx-changelog.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.12",
+    "@changesets/cli": "^2.31.0",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "husky": "^9.1.7",
+    "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.0.0",
+      "@types/react-dom": "^19.0.0"
+    }
+  }
+}

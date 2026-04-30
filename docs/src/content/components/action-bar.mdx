@@ -1,0 +1,58 @@
+---
+title: Action Bar
+description: A floating toolbar that appears conditionally, typically used for bulk actions on selected items.
+preview: false
+---
+
+<ComponentTabs name="action-bar-demo" align="center" className="p-4" />
+
+## Overview
+
+`ActionBar` is a highly interactive, accessible, and floating toolbar. It is commonly used as a context menu at the bottom of the screen (or container) when items are selected in a list or data table, providing quick access to bulk actions.
+
+## Import
+
+```ts
+import {
+  ActionBar,
+  ActionBarClose,
+  ActionBarGroup,
+  ActionBarItem,
+  ActionBarSelection,
+  ActionBarSeparator,
+} from "komdes";
+```
+
+## Anatomy
+
+```tsx
+<ActionBar open={true} onOpenChange={setOpen}>
+  <ActionBarSelection>2 Selected</ActionBarSelection>
+  <ActionBarSeparator />
+  <ActionBarGroup>
+    <ActionBarItem onClick={() => {}}>Edit</ActionBarItem>
+    <ActionBarItem onClick={() => {}}>Delete</ActionBarItem>
+  </ActionBarGroup>
+  <ActionBarSeparator />
+  <ActionBarClose />
+</ActionBar>
+```
+
+## Usage Notes
+
+### Portal Container
+
+By default, the `ActionBar` uses `ReactDOM.createPortal` to render directly into `document.body` and is styled with `fixed` positioning to appear at the bottom of the viewport.
+
+If you want to render the `ActionBar` inside a specific container (like the preview box above), you can pass a DOM element reference to the `portalContainer` prop, and ensure the parent container acts as a containing block for fixed positioning (e.g., using `transform: translateZ(0)` or similar CSS properties).
+
+```tsx
+const containerRef = useRef<HTMLDivElement>(null);
+
+<div ref={containerRef} style={{ transform: "translateZ(0)" }}>
+  {/* Content */}
+  <ActionBar portalContainer={containerRef.current} open={isOpen}>
+    {/* Action Bar Items */}
+  </ActionBar>
+</div>;
+```

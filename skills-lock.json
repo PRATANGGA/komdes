@@ -1,0 +1,17 @@
+{
+  "skills": {
+    "changelog-automation": {
+      "computedHash": "186f3db6c967bd19ff6ffeeb5d6cae84f7443cdae50835b57f61449a5696e7a4",
+      "skillPath": "plugins/documentation-generation/skills/changelog-automation/SKILL.md",
+      "source": "wshobson/agents",
+      "sourceType": "github"
+    },
+    "sql-optimization": {
+      "computedHash": "47c930907f25d67454ac8c2d155785eae3dce72242960d0c0e9ebf2ced9cd231",
+      "skillPath": "skills/sql-optimization/SKILL.md",
+      "source": "github/awesome-copilot",
+      "sourceType": "github"
+    }
+  },
+  "version": 1
+}

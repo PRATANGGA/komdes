@@ -1,0 +1,123 @@
+---
+title: Form
+description: Type-safe React Hook Form components integrated seamlessly with shadcn/ui primitives.
+preview: false
+---
+
+<ComponentTabs name="form-demo" align="start" className="p-4" />
+
+## Overview
+
+The `komdes` form components are powerful abstractions over `shadcn/ui` form primitives. They eliminate boilerplate while maintaining **full type safety** through rigorous TypeScript generics. This suite includes `FormInput`, `FormInputGroup`, `FormRadioGroup`, and `FormSwitch`.
+
+## Import
+
+```ts
+import { FormInput, FormInputGroup, FormSwitch, FormRadioGroup } from "komdes";
+```
+
+---
+
+## FormInput
+
+`FormInput` is the standard text input element.
+
+<AutoTypeTable path="../types/form.types.ts" name="FormInputProps" />
+
+---
+
+## FormInputGroup
+
+`FormInputGroup` renders an input equipped with an **optional right-side addon** (text, currency, unit, or icon).
+
+<AutoTypeTable path="../types/form.types.ts" name="FormInputGroupProps" />
+
+### Addon Examples
+
+**Text Addon:**
+
+```tsx
+<FormInputGroup
+  control={form.control}
+  name="price"
+  addon="USD"
+  inputGroupProps={{ type: "number" }}
+/>
+```
+
+**Compound Addon:**
+
+```tsx
+<FormInputGroup
+  control={form.control}
+  name="short_url"
+  addon={
+    <>
+      <GlobeIcon className="w-4 h-4 mr-2" /> ifx.li/
+    </>
+  }
+/>
+```
+
+---
+
+## FormRadioGroup
+
+`FormRadioGroup` renders selectable options as **clickable cards**. It natively supports `as const` arrays and custom rendering.
+
+<AutoTypeTable path="../types/form.types.ts" name="FormRadioGroupProps" />
+
+### `RadioOption` Type
+
+<AutoTypeTable path="../types/form.types.ts" name="RadioOption" />
+
+### Custom Render Slot
+
+Override the default card using `renderOption`:
+
+```tsx
+<FormRadioGroup
+  control={form.control}
+  name="gateway"
+  options={GATEWAYS}
+  renderOption={(opt, isSelected) => (
+    <div
+      className={cn("p-4 border rounded-lg", isSelected && "border-primary")}
+    >
+      {opt.label}
+    </div>
+  )}
+/>
+```
+
+---
+
+## FormSwitch
+
+`FormSwitch` is a toggle switch supporting two structural layouts.
+
+<AutoTypeTable path="../types/form.types.ts" name="FormSwitchProps" />
+
+### Layout Variants
+
+**Default Layout:** (Stacked)
+
+```tsx
+<FormSwitch
+  control={form.control}
+  name="notifications"
+  label="Enable notifications"
+/>
+```
+
+**Inline Layout:** (Card-like row)
+
+```tsx
+<FormSwitch
+  control={form.control}
+  name="is_shortened"
+  label="Shorten URL"
+  description="Automatically create a short link"
+  layout="inline"
+/>
+```

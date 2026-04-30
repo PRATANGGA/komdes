@@ -1,0 +1,48 @@
+---
+title: Introduction
+description: Shared UI components for consistent, scalable multi-repo frontend development.
+---
+
+## Overview
+
+`komdes` is a centralized UI library built on top of Radix UI primitives (shadcn/ui pattern), `react-hook-form`, and `@tanstack/react-table`. It is designed for consistency and reusability across multiple frontend projects.
+
+## Installation
+
+<Steps>
+<Step>
+### Install shadcn/ui
+
+Ensure you have installed and configured [shadcn/ui](https://ui.shadcn.com/docs/installation) in your project. `komdes` relies on the shadcn component architecture for UI consistency.
+</Step>
+
+<Step>
+### Install komdes
+
+Run the following command using your preferred package manager:
+
+```bash
+pnpm add komdes
+```
+</Step>
+</Steps>
+
+## Setup Tailwind v4
+
+Import the theme in your global CSS file:
+
+```css title="src/styles.css"
+@import "tailwindcss";
+
+/* Scan Tailwind classes from the library */
+@source "../../node_modules/komdes";
+```
+
+## Components
+
+| Category       | Export                                                                     |
+| -------------- | -------------------------------------------------------------------------- |
+| **Form**       | `FormInput`, `FormInputGroup`, `FormRadioGroup`, `FormSwitch`, `DataTable` |
+| **Data Table** | `DataTable`, `DataTableToolbar`, `DataTablePagination`, and more           |
+| **Hooks**      | `useDataTable`, `useDebouncedCallback`                                     |
+| **Primitives** | `Input`, `Label`, `Form`, and all shadcn base components                   |

@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@source "../../../packages/src";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./theme.css";
+@import "@fontsource-variable/noto-sans";
+@import "@fontsource-variable/playfair-display";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  html {
+    @apply overflow-x-hidden;
+  }
+  body {
+    @apply min-h-svh w-full bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar;
+    font-family: "Fragment Mono", monospace;
+  }
+
+  /* Override Radix scroll locking for sticky headers */
+  body[data-scroll-locked] {
+    overflow: unset !important;
+  }
+
+  /* Cursor pointer for buttons */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Prevent focus zoom on mobile devices */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+@layer components {
+  [data-line] span {
+    @apply text-(--shiki-light) dark:text-(--shiki-dark);
+  }
+}
+
+@utility auto-type-table {
+  & table {
+    @apply rounded-md w-full;
+  }
+
+  & table tr {
+    @apply bg-transparent hover:bg-transparent;
+  }
+
+  & table th {
+    @apply bg-accent/50;
+  }
+
+  & table td {
+    @apply align-top whitespace-pre-wrap;
+  }
+
+  & table td:nth-child(1),
+  & table th:nth-child(1) {
+    @apply w-[20%];
+  }
+
+  & table td:nth-child(2),
+  & table th:nth-child(2) {
+    @apply w-[45%];
+  }
+
+  & table td:nth-child(3),
+  & table th:nth-child(3) {
+    @apply w-[35%];
+  }
+}
+
+@utility mdx {
+  & table {
+    @apply rounded-md my-2.5;
+  }
+
+  & table tr {
+    @apply bg-transparent hover:bg-transparent;
+  }
+
+  & table th {
+    @apply bg-accent/50;
+  }
+}

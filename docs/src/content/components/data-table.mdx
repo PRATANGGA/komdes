@@ -1,0 +1,364 @@
+---
+title: Data Table
+description: A powerful and flexible data table component for displaying, filtering, sorting, and paginating tabular data.
+preview: false
+links:
+  doc: https://tanstack.com/table/latest/docs/introduction
+  api: /docs/components/radix/data-table#api-reference
+---
+
+<ComponentTabs name="table-demo" align="start" className="p-4" />
+
+Reference the [TanStack Table Column Definitions Guide](https://tanstack.com/table/latest/docs/guide/column-defs#column-definitions-guide) for detailed column definition guide.
+
+## Features
+
+- **Advanced Filtering** - Multiple filter types (text, number, date, select, multi-select) with customizable operators
+- **URL State Management** - Sync table state with URL search params using [nuqs](https://nuqs.47ng.com)
+- **Sorting** - Multi-column sorting with persistent state
+- **Pagination** - Server-side or client-side pagination with customizable page sizes
+- **Column Visibility** - Toggle column visibility with view options menu
+- **Row Selection** - Single or multi-row selection with action bar
+- **Column Pinning** - Pin columns to left or right for better UX
+- **Keyboard Navigation** - Full keyboard support with shortcuts for filter and sort menus
+- **Responsive** - Mobile-first design with overflow handling
+- **Customizable** - Flexible API for custom filters, columns, and actions
+
+## Layout
+
+Import all components and combine them:
+
+```tsx
+import {
+  DataTable,
+  DataTableToolbar,
+  DataTableAdvancedToolbar,
+  DataTableFilterList,
+  useDataTable
+} from "komdes";
+
+const { table } = useDataTable({
+  data,
+  columns,
+  pageCount,
+});
+
+// With standard toolbar
+<DataTable table={table}>
+  <DataTableToolbar table={table}>
+</DataTable>
+
+// Add extra children for custom node
+<DataTable table={table}>
+  <DataTableToolbar table={table}>
+    <Button size="icon" variant="outline">
+      <RefreshCw />
+    </Button>
+  </DataTableToolbar>
+</DataTable>
+```
+
+## Walkthrough
+
+<Steps>
+  <Step>
+    Define columns with appropriate metadata:
+
+    ```tsx
+    import { Text, CalendarIcon, DollarSign } from "lucide-react";
+    import { DataTableColumnHeader } from "komdes";
+
+    const columns = React.useMemo(() => [
+      {
+        // Enter a unique ID; this is used as the query key for the column filter
+        id: "username", // [!code highlight]
+        accessorFn: (row) => row.username,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Title" />
+        ),
+        cell: ({ row }) => <div>{row.getValue("title")}</div>,
+        // Meta options for columns for sorting, filtering, and display options.
+        meta: { // [!code highlight]
+          label: "Username", // [!code highlight]
+          placeholder: "Search username...", // [!code highlight]
+          variant: "text", // [!code highlight]
+          icon: Text, // [!code highlight]
+        }, // [!code highlight]
+        // By default is `false`; set this to `true` to enable filtering.
+        enableColumnFilter: true, // [!code highlight]
+      },
+    ], []);
+    ```
+
+  </Step>
+
+  <Step>
+    Initialize the table state using the `useDataTable` hook:
+
+    ```tsx
+    import { useDataTable } from "komdes";
+
+    function TableDemo() {
+      const { table } = useDataTable({
+        data,
+        columns,
+        // Enter the total number of pages
+        pageCount, // [!code highlight]
+        initialState: {
+          pagination: { pageIndex: 0, pageSize: 10 },
+          sorting: [{ desc: true, id: 'createdAt' }],
+        },
+        // Unique identifier for rows, can be used for unique row selection
+        getRowId: (row) => row.id, // [!code highlight]
+      });
+
+      return (
+        // ... render table
+      );
+    }
+    ```
+
+  </Step>
+
+  <Step>
+    Pass the table instance to the `DataTable`, and `DataTableToolbar` components:
+
+    ```tsx
+    import { DataTable, DataTableToolbar, DataTableSortList } from "komdes";
+
+    function DataTableDemo() {
+      return (
+        <DataTable table={table}>
+          <DataTableToolbar table={table}>
+            <Button size="icon" variant="outline">
+              <RefreshCw />
+            </Button>
+          </DataTableToolbar>
+        </DataTable>
+      );
+    }
+    ```
+
+  </Step>
+
+  <Step>
+    Render an action bar on row selection:
+
+    ```tsx
+    import { ActionBar } from "@/components/ui/action-bar";
+
+    function TableActionBar({ table }: { table: Table<Data> }) {
+      const rows = table.getFilteredSelectedRowModel().rows;
+
+      const onOpenChange = React.useCallback((open: boolean) => {
+        if (!open) {
+          table.toggleAllRowsSelected(false);
+        }
+      },
+      [table],
+    );
+
+      return (
+        <ActionBar open={rows.length > 0} onOpenChange={onOpenChange}>
+          {/* Add your custom actions here */}
+        </ActionBar>
+      );
+    }
+
+    function DataTableDemo() {
+      return (
+        <DataTable
+          table={table}
+          actionBar={<TableActionBar table={table} />}
+        >
+          <DataTableToolbar table={table} />
+        </DataTable>
+      );
+    }
+    ```
+
+  </Step>
+</Steps>
+
+## API Reference
+
+### Column Definitions
+
+The column definitions are used to define the columns of the data table.
+
+```tsx
+const columns = React.useMemo<ColumnDef<Project>[]>(
+  () => [
+    {
+      // Required: Unique identifier for the column
+      id: "title", // [!code highlight]
+      // Required: Key to access the data, `accessorFn` can also be used
+      accessorKey: "title", // [!code highlight]
+      // Optional: Custom header component
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Title" />
+      ),
+      // Optional: Custom cell component
+      cell: ({ row }) => <div>{row.getValue("title")}</div>,
+      // Optional: Meta options for filtering, sorting, and view options
+      meta: {
+        label: "Title",
+        placeholder: "Search titles...",
+        variant: "text",
+        icon: Text,
+      },
+      // By default, the column will not be filtered. Set to `true` to enable filtering.
+      enableColumnFilter: true, // [!code highlight]
+    },
+    {
+      id: "status",
+      // Access nested data using `accessorFn`
+      accessorFn: (row) => row.lineItem.status,
+      header: "Status",
+      meta: {
+        label: "Status",
+        variant: "select",
+        options: [
+          { label: "Active", value: "active" },
+          { label: "Inactive", value: "inactive" },
+        ],
+      },
+      enableColumnFilter: true,
+    },
+  ],
+  [],
+);
+```
+
+#### Properties
+
+Core configuration options for defining columns.
+
+<PropsTable
+  data={[
+    {
+      title: "id",
+      description: "Required: Unique identifier for the column",
+    },
+    {
+      title: "accessorKey",
+      description: "Required: Key to access the data from the row",
+    },
+    {
+      title: "accessorFn",
+      description: "Optional: Custom accessor function to access data",
+    },
+    {
+      title: "header",
+      description: "Optional: Custom header component with column props",
+    },
+    {
+      title: "cell",
+      description: "Optional: Custom cell component with row props",
+    },
+    {
+      title: "meta",
+      description: "Optional: Meta options for accessing column metadata",
+    },
+    {
+      title: "enableColumnFilter",
+      description:
+        "By default, the column will not be filtered. Set to `true` to enable filtering",
+    },
+    {
+      title: "enableSorting",
+      description: "Enable sorting for this column",
+    },
+    {
+      title: "enableHiding",
+      description: "Enable column visibility toggle",
+    },
+  ]}
+/>
+
+#### Column Meta
+
+Column meta options for filtering, sorting, and view options.
+
+<PropsTable
+  data={[
+    {
+      title: "label",
+      description: "The display name for the column",
+    },
+    {
+      title: "placeholder",
+      description: "The placeholder text for filter inputs",
+    },
+    {
+      title: "variant",
+      description:
+        "The type of filter to use (`text`, `number`, `select`, etc.)",
+    },
+    {
+      title: "options",
+      description:
+        "For select/multi-select filters, an array of options with `label`, `value`, and optional `count` and `icon`",
+    },
+    {
+      title: "range",
+      description: "For range filters, a tuple of `[min, max]` values",
+    },
+    {
+      title: "unit",
+      description: "For numeric filters, the unit to display (e.g., 'hr', '$')",
+    },
+    {
+      title: "icon",
+      description: "The react component to use as an icon for the column",
+    },
+  ]}
+/>
+
+#### Filter Variants
+
+Available filter variants for [column meta](#column-meta).
+
+<PropsTable
+  variant="title"
+  data={[
+    {
+      title: "text",
+      description: "Text search with contains, equals, etc.",
+    },
+    {
+      title: "number",
+      description: "Numeric filters with equals, greater than, less than, etc.",
+    },
+    {
+      title: "range",
+      description: "Range filters with minimum and maximum values",
+    },
+    {
+      title: "date",
+      description: "Date filters with equals, before, after, etc.",
+    },
+    {
+      title: "dateRange",
+      description: "Date range filters with start and end dates",
+    },
+    {
+      title: "boolean",
+      description: "Boolean filters with true/false values",
+    },
+    {
+      title: "select",
+      description: "Single-select filters with predefined options",
+    },
+    {
+      title: "multiSelect",
+      description: "Multi-select filters with predefined options",
+    },
+  ]}
+/>
+
+### useDataTable
+
+A hook for initializing the data table with state management.
+
+For comprehensive documentation on `useDataTable` including props, return types, and detailed usage examples, please refer to the dedicated [useDataTable](/docs/hooks/use-data-table) documentation.
