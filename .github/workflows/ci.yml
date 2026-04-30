@@ -1,111 +1,64 @@
-# CI — Release Pipeline
-#
-# Triggered on every push to `main`.
-# • Changesets PR:   keeps a "Version Packages" PR open with version bumps.
-# • Publish:         merges that PR → publishes to npm automatically.
-
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - development
+      - production
   pull_request:
-    branches: [main]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    branches:
+      - development
+      - production
 
 jobs:
-  # ── 1. Lint & type-check ───────────────────────────────────────────────────
-  check:
-    name: Type-check & Lint
+  validate-and-build:
+    name: Build Docs & Packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          version: 10
+          version: 9
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: 20
+          cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Type-check packages
-        run: pnpm -F komdes tsc --noEmit
-
-  # ── 2. Build ───────────────────────────────────────────────────────────────
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: check
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Build komdes
+      - name: Build Komdes Package
         run: pnpm build:komdes
 
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: komdes-dist
-          path: packages/dist
+      - name: Build Docs
+        run: pnpm build:docs
 
-  # ── 3. Changesets — open/update "Version Packages" PR ─────────────────────
-  release-pr:
-    name: Version or Publish
+  deploy:
+    name: Deploy to VPS
+    needs: validate-and-build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/development' || github.ref == 'refs/heads/production')
     runs-on: ubuntu-latest
-    needs: build
-    # Only run on main branch pushes (not PRs)
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: SSH and Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          fetch-depth: 0
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          registry-url: https://registry.npmjs.org
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Download dist
-        uses: actions/download-artifact@v4
-        with:
-          name: komdes-dist
-          path: packages/dist
-
-      - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@v1
-        with:
-          publish: pnpm run release
-          title: "chore: version packages"
-          commit: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd /var/www/komdes
+            
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+            
+            pnpm install
+            pnpm build:komdes
+            pnpm build:docs
+            
+            # pm2 restart komdes-docs
