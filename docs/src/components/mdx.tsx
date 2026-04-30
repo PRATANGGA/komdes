@@ -1,11 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { Pre } from 'fumadocs-ui/components/codeblock';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { FeedbackBlock } from './feedback/client';
 import { PropsTable } from './props-table';
 
 const AutoTypeTable = lazy(() =>
@@ -41,6 +43,11 @@ export function getMDXComponents(components?: MDXComponents) {
         <ComponentTabs {...props} />
       </Suspense>
     ),
+    FeedbackBlock: ({ children, ...rest }) => (
+      <FeedbackBlock {...rest} onSendAction={() => ''}>
+        {children}
+      </FeedbackBlock>
+    ),
     Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
       <Link className={cn('underline underline-offset-4', className)} {...props} />
     ),
@@ -56,6 +63,7 @@ export function getMDXComponents(components?: MDXComponents) {
     ),
     Step,
     Steps,
+    TypeTable,
   } satisfies MDXComponents;
 }
 
