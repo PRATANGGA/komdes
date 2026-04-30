@@ -9,6 +9,7 @@ import { getMDXComponents } from '@/components/mdx';
 // import { getChangelogToc } from '@/lib/changelog';
 import { docsOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
+// import { Feedback } from '@/components/feedback/client';
 
 export const Route = createFileRoute('/docs/$')({
   component: Page,
@@ -17,6 +18,15 @@ export const Route = createFileRoute('/docs/$')({
     const data = await serverLoader({ data: slugs });
     await clientLoader.preload(data.path);
     return data;
+  },
+  head: ({ loaderData }) => {
+    const title = loaderData?.title ? `${loaderData.title} | Komdes` : 'Komdes Documentation';
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: loaderData?.description },
+      ],
+    };
   },
 });
 
@@ -31,6 +41,8 @@ const serverLoader = createServerFn({
     return {
       pageTree: await source.serializePageTree(source.getPageTree()),
       path: page.path,
+      title: page.data.title,
+      description: page.data.description,
     };
   });
 
@@ -51,10 +63,16 @@ const clientLoader = browserCollections.docs.createClientLoader({
         toc={toc}
       >
         <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
+              <DocsDescription>{frontmatter.description}</DocsDescription>
         <DocsBody>
           <MDX components={getMDXComponents()} />
         </DocsBody>
+        {/* <Feedback 
+          onSendAction={async (feedback) => {
+          // await posthog.capture('on_rate_docs', feedback);
+        }}
+        /> */}
+
       </DocsPage>
     );
   },
