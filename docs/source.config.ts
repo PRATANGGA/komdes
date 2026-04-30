@@ -1,9 +1,17 @@
-import { rehypeCode } from 'fumadocs-core/mdx-plugins';
+import {
+  // type RemarkFeedbackBlockOptions,
+  rehypeCode,
+  // remarkFeedbackBlock,
+} from 'fumadocs-core/mdx-plugins';
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { remarkAutoTypeTable } from 'fumadocs-typescript';
 import z from 'zod';
 import { remarkComponent } from './src/lib/remark-component';
+
+// const feedbackOptions: RemarkFeedbackBlockOptions = {
+//   // other options:
+// };
 
 export default defineConfig({
   mdxOptions: {
@@ -21,7 +29,11 @@ export default defineConfig({
         },
       ],
     ],
-    remarkPlugins: [remarkComponent, [remarkAutoTypeTable]],
+    remarkPlugins: [
+      remarkComponent,
+      // [remarkFeedbackBlock, feedbackOptions],
+      [remarkAutoTypeTable],
+    ],
     // rehypeCodeOptions: {
     //   theme: "github-light",
 
