@@ -11,10 +11,9 @@ export * from './components/data-table/data-table-toolbar';
 // Export Form
 export * from './components/form/form-input';
 export * from './components/form/form-input-group';
+export * from './components/form/form-password';
 export * from './components/form/form-radio-group';
 export * from './components/form/form-switch';
 // Export Hooks
 export * from './components/hooks/use-data-table';
 export * from './components/long-text';
-export * from './components/password-input';
-export * from './components/select-dropdown';

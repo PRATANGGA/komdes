@@ -21,7 +21,7 @@
   }
   body {
     @apply min-h-svh w-full bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar;
-    font-family: "Fragment Mono", monospace;
+    font-family: var(--font-sans);
   }
 
   /* Override Radix scroll locking for sticky headers */

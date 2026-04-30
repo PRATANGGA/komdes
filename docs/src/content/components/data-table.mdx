@@ -357,8 +357,206 @@ Available filter variants for [column meta](#column-meta).
   ]}
 />
 
-### useDataTable
+## useDataTable
 
 A hook for initializing the data table with state management.
 
-For comprehensive documentation on `useDataTable` including props, return types, and detailed usage examples, please refer to the dedicated [useDataTable](/docs/hooks/use-data-table) documentation.
+### Overview
+
+The `useDataTable` hook acts as an intelligent wrapper around `useReactTable` from `@tanstack/react-table`. It seamlessly handles:
+
+- Server-side **pagination**, **sorting**, and **filtering**
+- **Controlled** or **uncontrolled** state for page and page size
+- **Debounced** column filter updates (defaults to 300ms) to prevent excessive API calls
+- **Row selection** and **column visibility** management
+
+### Import
+
+```ts
+import { useDataTable } from "komdes";
+```
+
+### Usage
+
+#### Basic Setup
+
+First, define your columns. Use the `meta` property to configure filter behaviors.
+
+```tsx
+import { useMemo, useState } from "react";
+import { useDataTable, DataTable, DataTableColumnHeader } from "komdes";
+import type { ColumnDef } from "@tanstack/react-table";
+
+function useInvoiceColumns(): ColumnDef<Invoice>[] {
+  return useMemo(
+    () => [
+      {
+        accessorFn: (row) => row.invoice_id,
+        id: "invoice_id",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Invoice ID" />
+        ),
+        enableColumnFilter: true,
+        enableHiding: false,
+        enableSorting: false,
+        size: 150,
+        meta: {
+          label: "Invoice ID",
+          placeholder: "Search invoice ID...",
+          variant: "text",
+        },
+      },
+      {
+        accessorKey: "amount",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Amount" />
+        ),
+      },
+    ],
+    [],
+  );
+}
+```
+
+#### Controlled Pagination (Recommended for API integrations)
+
+When fetching data from an external API, it's highly recommended to control the pagination state externally.
+
+```tsx
+function InvoiceTable() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch data from your API utilizing the page & limit variables
+  const { data, meta } = useQuery({
+    queryKey: ["invoices", page, limit],
+    queryFn: () => fetchInvoices({ page, limit }),
+  });
+
+  const columns = useInvoiceColumns();
+
+  const { table, filterValues } = useDataTable({
+    columns,
+    data: data?.data ?? [],
+    getRowId: (row) => row.invoice_id,
+    pageCount: meta?.total_pages ?? 0,
+    // Controlled pagination props
+    page,
+    perPage: limit,
+    onPageChange: setPage,
+    onPerPageChange: (newLimit) => {
+      setLimit(newLimit);
+      setPage(1); // Reset to the first page when the limit changes
+    },
+  });
+
+  return <DataTable table={table} />;
+}
+```
+
+#### Uncontrolled Pagination
+
+If you don't provide `page`, `perPage`, or `onPageChange`, the hook will manage the state internally.
+
+```tsx
+const { table, filterValues, page, perPage } = useDataTable({
+  columns,
+  data,
+  pageCount,
+  // Internal state management is active since no controlled props are passed
+});
+```
+
+### Column Filtering
+
+Column filtering is enabled by setting `enableColumnFilter: true` in your column definitions. The `filterValues` returned by the hook contains the active filter key-value pairs that can be sent directly to your API:
+
+```tsx
+const { table, filterValues } = useDataTable({ ... });
+
+// filterValues contains: { invoice_id: 'INV-001', status: ['paid', 'pending'] }
+// Utilize this object as API query parameters
+useEffect(() => {
+  refetch({ ...filterValues });
+}, [filterValues]);
+```
+
+### Props
+
+The `useDataTable` hook accepts the following properties.
+
+<AutoTypeTable path="../types/data-table.types.ts" name="UseDataTableProps" />
+
+### Returns
+
+The `useDataTable` hook returns an object with the following properties.
+
+<AutoTypeTable path="../types/data-table.types.ts" name="UseDataTableReturn" />
+
+### Column Meta for Filter Variant
+
+Utilize the `meta` property in your column definitions to configure the UI representation of the filter:
+
+```ts
+meta: {
+  label: 'Status',
+  variant: 'select',    // Accepts: 'text' | 'select' | 'multiSelect' | 'date' | 'range' | 'boolean'
+  options: [
+    { label: 'Paid', value: 'paid' },
+    { label: 'Pending', value: 'pending' },
+  ],
+}
+```
+
+### Loading State (DataTableSkeleton)
+
+`DataTableSkeleton` is used to display a loading skeleton that strictly matches the actual layout of the data table. This is extremely useful when combined with `React.Suspense` or when awaiting data from an API.
+
+#### Skeleton Usage
+
+```tsx
+import { DataTableSkeleton } from "komdes";
+
+function MyTableSkeleton() {
+  return (
+    <DataTableSkeleton
+      columnCount={7}
+      rowCount={10}
+      filterCount={2}
+      shrinkZero
+    />
+  );
+}
+```
+
+#### Suspense Integration
+
+The recommended pattern when using frameworks like Next.js or React Router v7 with asynchronous data fetching:
+
+```tsx
+import { Suspense } from "react";
+import { DataTableSkeleton } from "komdes";
+
+function Page() {
+  return (
+    <div className="p-6">
+      <Suspense fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
+        <MyDataTableContainer />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+#### Skeleton Props
+
+| Prop              | Type       | Default    | Description                                                                           |
+| ----------------- | ---------- | ---------- | ------------------------------------------------------------------------------------- |
+| `columnCount`     | `number`   | —          | **Required**. The number of columns the skeleton should render.                       |
+| `rowCount`        | `number`   | `10`       | The number of row skeletons to display.                                               |
+| `filterCount`     | `number`   | `0`        | The number of filter skeleton boxes to display in the top toolbar.                    |
+| `cellWidths`      | `string[]` | `['auto']` | An array of column widths (e.g., `['100px', '200px']`).                               |
+| `withViewOptions` | `boolean`  | `true`     | Whether to render the skeleton for the column visibility toggle button.               |
+| `withPagination`  | `boolean`  | `true`     | Whether to render the skeleton for the bottom pagination controls.                    |
+| `shrinkZero`      | `boolean`  | `false`    | If `true`, columns will possess a `min-width` matching their respective `cellWidths`. |
+| `className`       | `string`   | —          | Custom CSS class for the main container.                                              |

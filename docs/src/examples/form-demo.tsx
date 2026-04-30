@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormInput, FormInputGroup, FormRadioGroup, FormSwitch } from 'komdes';
+import { FormInput, FormInputGroup, FormInputPassword, FormRadioGroup, FormSwitch } from 'komdes';
 import { Link2Icon, SparklesIcon, ZapIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import { Form } from '@/components/ui/form';
 
 const formSchema = z.object({
   notifications: z.boolean(),
+  password: z.string().min(10),
   plan: z.enum(['free', 'pro']),
   username: z.string().min(3, 'Username must be at least 3 characters long'),
   website: z.url('Must be a valid URL').optional().or(z.literal('')),
@@ -27,6 +28,7 @@ export default function FormDemo() {
   const form = useForm<FormData>({
     defaultValues: {
       notifications: true,
+      password: '',
       plan: 'free',
       username: '',
       website: '',
@@ -76,6 +78,14 @@ export default function FormDemo() {
               labelClassName="sm:w-[120px]"
               layout={formLayout}
               name="username"
+            />
+            <FormInputPassword
+              control={form.control}
+              inputProps={{ placeholder: 'xxxxxx' }}
+              label="Password"
+              labelClassName="sm:w-[120px]"
+              layout={formLayout}
+              name="password"
             />
 
             <FormInputGroup
