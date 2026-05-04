@@ -1,17 +1,19 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
     branches:
       - development
-      - production
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - development
-      - production
+    tags:
+      - 'v*'
 
 jobs:
-  validate-and-build:
+  build-docs:
     name: Build Docs & Packages
     runs-on: ubuntu-latest
     steps:
@@ -38,27 +40,3 @@ jobs:
       - name: Build Docs
         run: pnpm build:docs
 
-  deploy:
-    name: Deploy to VPS
-    needs: validate-and-build
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/development' || github.ref == 'refs/heads/production')
-    runs-on: ubuntu-latest
-    steps:
-      - name: SSH and Deploy to Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          script: |
-            cd /var/www/komdes
-            
-            git fetch origin
-            git reset --hard origin/${{ github.ref_name }}
-            
-            pnpm install
-            pnpm build:komdes
-            pnpm build:docs
-            
-            # pm2 restart komdes-docs
