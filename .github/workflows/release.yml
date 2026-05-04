@@ -29,6 +29,16 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build Packages & Docs
+        run: |
+          pnpm build:komdes
+          pnpm build:docs
+
+      - name: Publish to NPM
+        run: pnpm -F komdes publish --access public --no-git-checks
+
+
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
