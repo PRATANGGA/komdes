@@ -2,51 +2,47 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
-
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+    branches: [main]
+    tags:
+      - 'v*'
 
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
         with:
           version: 9
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
 
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: Build Packages & Docs
+      - name: Build
         run: |
           pnpm build:komdes
           pnpm build:docs
-
-      - name: Publish to NPM
-        run: pnpm -F komdes publish --access public --no-git-checks
-
-
-
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
+      - name: Release (Changesets)
         uses: changesets/action@v1
         with:
           publish: pnpm release
           version: pnpm version-packages
-          commit: "chore(release): version packages"
-          title: "chore(release): version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: komdes
+          directory: docs/dist/client
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
