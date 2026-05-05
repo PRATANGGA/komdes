@@ -29,14 +29,6 @@ jobs:
         run: |
           pnpm build:komdes
           pnpm build:docs
-      - name: Release (Changesets)
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release
-          version: pnpm version-packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
