@@ -35,6 +35,10 @@ export const docsOptions: DocsLayoutProps = {
   ...baseOptions,
   links: [githubLink],
   sidebar: { defaultOpenLevel: 1 },
+  tree: {
+    name: 'Docs',
+    children: []
+  }
   // tabs: [
   //   {
   //     title: 'Components',
