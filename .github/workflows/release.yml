@@ -5,44 +5,40 @@ on:
     branches: [main]
     tags:
       - 'v*'
-
+permissions:
+  contents: read
+  deployments: write
+  
 jobs:
-  release:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: |
-          pnpm build:komdes
-          pnpm build:docs
-      - name: Release (Changesets)
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release
-          version: pnpm version-packages
+      - name: Build Komdes Package
+        run: pnpm build:komdes
+
+      - name: Build Docs App
+        run: pnpm build:docs
+
+      - name: Deploy to Cloudflare Worker
+        run: pnpm --filter docs wrangler deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: komdes
-          directory: docs/dist/client
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}    

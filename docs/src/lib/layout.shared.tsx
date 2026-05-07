@@ -31,7 +31,7 @@ const baseOptions: BaseLayoutProps = {
   },
 };
 
-export const docsOptions: DocsLayoutProps = {
+export const docsOptions: Omit<DocsLayoutProps, 'tree'> = {
   ...baseOptions,
   links: [githubLink],
   sidebar: { defaultOpenLevel: 1 },
