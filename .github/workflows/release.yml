@@ -38,7 +38,7 @@ jobs:
         run: pnpm build:docs
 
       - name: Deploy to Cloudflare Worker
-        run: pnpm --filter docs deploy
+        run: pnpm --filter docs run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}    
