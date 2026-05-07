@@ -36,9 +36,9 @@ export const docsOptions: Omit<DocsLayoutProps, 'tree'> = {
   links: [githubLink],
   sidebar: { defaultOpenLevel: 1 },
   tree: {
+    children: [],
     name: 'Docs',
-    children: []
-  }
+  },
   // tabs: [
   //   {
   //     title: 'Components',
