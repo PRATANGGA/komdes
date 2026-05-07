@@ -28,6 +28,10 @@
     "typescript": "^5.4.5"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lightningcss"
+  ],
     "overrides": {
       "@types/react": "^19.0.0",
       "@types/react-dom": "^19.0.0"
